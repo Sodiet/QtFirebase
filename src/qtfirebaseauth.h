@@ -13,7 +13,6 @@
 #define qFirebaseAuth (static_cast<QtFirebaseAuth *>(QtFirebaseAuth::instance()))
 
 class SmsListener;
-
 class QtFirebaseAuth : public QtFirebaseService
 {
     Q_OBJECT
@@ -61,6 +60,7 @@ public slots:
 
     //Sms
     void smsVerification(firebase::auth::Credential credential);
+    void smsVerificationError(const QString &errorMsg);
     void smsSignIn(const QString &phone_number);
     void resendSms();
     void codeReceived(const QString &code);
@@ -113,8 +113,6 @@ private:
     Q_DISABLE_COPY(QtFirebaseAuth)
 };
 
-
-
 class SmsListener : public QObject, public firebase::auth::PhoneAuthProvider::Listener
 {
     Q_OBJECT
@@ -137,7 +135,7 @@ public slots:
 
 signals:
     void verificationCompleted(firebase::auth::Credential credential);
-    void verificationFailed();
+    void verificationFailed(const QString &error);
     void codeSent();
 
 private:
@@ -150,7 +148,6 @@ private:
     QString m_phoneNumber;
     QMutex m_mutex;
 };
-
 
 #endif //QTFIREBASE_BUILD_AUTH
 

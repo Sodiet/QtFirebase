@@ -30,10 +30,8 @@ Cloud Messaging	          |libmessaging.a         |✓|✓|[Isy](https://github.
 Remote Config             |libremote_config.a     |✓|✓|[greenfield932](https://github.com/greenfield932)
 ~~Cloud Storage~~	        |~~libstorage.a~~       |in progress |:wrench: |[Furkanzmc](https://github.com/Furkanzmc)
 
-Please note that Native Express ads are now deprecated. `QtFirebaseAdMobNativeExpressAd` is therefore removed in commit [4e217cc](https://github.com/Larpon/QtFirebase/commit/4e217cc5ae4270631c8f98d1cce94c8b849b1f08).
-
 ## Contributors
-Without [contributions from these good people](https://github.com/Larpon/QtFirebase/pulls?q=is%3Apr+is%3Aclosed) this project would not exist.
+Without [contributions](https://github.com/Larpon/QtFirebase/pulls?q=is%3Apr+is%3Aclosed) from these good people this project would not exist.
 
 [Lars Pontoppidan](https://github.com/Larpon) (Maintainer, project founder, Base, AdMob, Analytics),
 [greenfield932](https://github.com/greenfield932) (Remote Config, Misc.),
@@ -60,9 +58,7 @@ Up until commit [cb52be83](https://github.com/Larpon/QtFirebase/commit/cb52be832
 **Base, AdMob, Analytics, RemoteConfig, Cloud Messaging, Authentication, Realtime Database**
 * v4.1.0
 * v4.2.0
-* v4.5.0 **NOTE** Native Express ads are deprecated from this release
 * v4.5.1
-* v5.0.0
 
 We recommend you build against the latest version of the Firebase C++ SDK.
 

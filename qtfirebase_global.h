@@ -1,0 +1,12 @@
+#ifndef QTFIREBASE_GLOBAL_H
+#define QTFIREBASE_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(QTFIREBASE_LIBRARY)
+#  define QTFIREBASESHARED_EXPORT Q_DECL_EXPORT
+#else
+#  define QTFIREBASESHARED_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // QTFIREBASE_GLOBAL_H

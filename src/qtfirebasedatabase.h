@@ -46,6 +46,9 @@ public:
     };
     Q_ENUM(Error)
 
+
+    bool m_ready;
+
     //TODO implement database related functions
     //(not important to write/read data for now but useful for extended control)
     //https://firebase.google.com/docs/reference/cpp/class/firebase/database/database
@@ -166,6 +169,7 @@ public slots:
 
     //State
     bool running() const;
+    bool ready() const;
     int errorId() const;
     bool hasError() const;
     QString errorMsg() const;

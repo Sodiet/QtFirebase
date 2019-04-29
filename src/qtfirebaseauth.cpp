@@ -19,10 +19,8 @@ QtFirebaseAuth::QtFirebaseAuth(QObject *parent) : QtFirebaseService(parent),
         self = this;
         qDebug() << self << "::QtFirebaseAuth" << "singleton";
     }
-
     startInit();
 }
-
 
 QtFirebaseAuth::~QtFirebaseAuth()
 {
@@ -80,6 +78,7 @@ void QtFirebaseAuth::sendPasswordResetEmail(const QString &email)
            m_auth->SendPasswordResetEmail(email.toUtf8().constData());
     qFirebase->addFuture(__QTFIREBASE_ID + QStringLiteral(".auth.resetEmail"), future);
 }
+
 
 
 bool QtFirebaseAuth::signedIn() const
@@ -241,6 +240,7 @@ void QtFirebaseAuth::init()
     m_listener = new SmsListener();
 
     connect(m_listener, &SmsListener::verificationCompleted, this, &QtFirebaseAuth::smsVerification);
+    connect(m_listener, &SmsListener::verificationFailed, this, &QtFirebaseAuth::smsVerificationError);
     connect(m_listener, &SmsListener::codeSent, this, &QtFirebaseAuth::codeSent);
 }
 
@@ -354,14 +354,13 @@ void QtFirebaseAuth::onFutureEvent(QString eventId, firebase::FutureBase future)
     setComplete(true);
 }
 
-
 void QtFirebaseAuth::smsSignIn(const QString &phone_number)
 {
     qDebug() << "smsSignIn";
 
     auth::PhoneAuthProvider& phone_provider = auth::PhoneAuthProvider::GetInstance(m_auth);
     phone_provider.VerifyPhoneNumber(phone_number.toUtf8().constData(), 120, NULL,
-                                      m_listener);
+                                   m_listener);
 }
 
 void QtFirebaseAuth::resendSms()
@@ -370,11 +369,21 @@ void QtFirebaseAuth::resendSms()
 
     auth::PhoneAuthProvider& phone_provider = auth::PhoneAuthProvider::GetInstance(m_auth);
     phone_provider.VerifyPhoneNumber(m_listener->getPhoneNumber().toUtf8().constData(), 120, m_listener->getToken(),
-                                      m_listener);
+                                   m_listener);
 }
 
 void QtFirebaseAuth::codeReceived(const QString &code)
 {
+    if(running())
+        return;
+
+    if (m_listener->verificationID().isEmpty()) {
+        setComplete(false);
+        setError(ErrorFailure, QStringLiteral("Enter the phone number first"));
+        setComplete(true);
+        return;
+    }
+
     m_mutex.lock();
     auth::PhoneAuthProvider& phone_provider = auth::PhoneAuthProvider::GetInstance(m_auth);
     auth::Credential credential = phone_provider.GetCredential(m_listener->verificationID().toUtf8().constData(), code.toUtf8().constData());
@@ -407,8 +416,15 @@ void QtFirebaseAuth::smsVerification(auth::Credential credential)
     m_mutex.unlock();
 }
 
+void QtFirebaseAuth::smsVerificationError(const QString &errorMsg)
+{
+    setComplete(false);
+    setError(ErrorFailure, errorMsg);
+    setComplete(true);
+}
+
 SmsListener::SmsListener(QObject* parent)
-    : QObject(parent)
+: QObject(parent)
 {
 }
 
@@ -421,10 +437,11 @@ void SmsListener::OnVerificationFailed(const std::string& error)
 {
     qDebug() << "Verification Failed: " << QString::fromStdString(error);
     setPhoneNumber("");
+    verificationFailed(QString::fromStdString(error));
 }
 
 void SmsListener::OnCodeSent(const std::string& verification_id,
-                             const firebase::auth::PhoneAuthProvider::ForceResendingToken &force_resending_token)
+                      const firebase::auth::PhoneAuthProvider::ForceResendingToken &force_resending_token)
 {
     m_mutex.lock();
     qDebug() << "OnCodeSent";

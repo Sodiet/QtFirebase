@@ -7,6 +7,7 @@ QtFirebaseDatabase* QtFirebaseDatabase::self = 0;
 
 QtFirebaseDatabase::QtFirebaseDatabase(QObject *parent) : QtFirebaseService(parent),
     m_db(nullptr)
+    ,m_ready(false)
 {
     startInit();
 }
@@ -23,6 +24,7 @@ void QtFirebaseDatabase::init()
         m_db = db::Database::GetInstance(qFirebase->firebaseApp());
         qDebug() << self << "::init" << "native initialized";
         setInitializing(false);
+        m_ready = true;
         setReady(true);
     }
 }
@@ -249,6 +251,13 @@ void QtFirebaseDatabaseRequest::remove()
     {
         m_inComplexRequest = false;
         setComplete(false);
+        if (qFirebaseDatabase->m_db->GetReference().GetRoot() == m_dbRef) {
+            qDebug() << "ERROR: Cannot remove the Root item";
+            setError(QtFirebaseDatabase::ErrorUnknownError, "ERROR: Cannot remove the Root item");
+            setComplete(true);
+            return;
+        }
+
         firebase::Future<void> future = m_dbRef.RemoveValue();
         qFirebaseDatabase->addFuture(DatabaseActions::Remove, this, future);
     }
@@ -264,6 +273,14 @@ void QtFirebaseDatabaseRequest::setValue(const QVariant &value)
         {
             m_dbRef = m_dbRef.Child(m_pushChildKey.toUtf8().constData());
         }
+
+        if (qFirebaseDatabase->m_db->GetReference().GetRoot() == m_dbRef) {
+            qDebug() << "ERROR: Cannot write to the Root item";
+            setError(QtFirebaseDatabase::ErrorUnknownError, "ERROR: Cannot write to the Root item");
+            setComplete(true);
+            return;
+        }
+
         firebase::Future<void> future = m_dbRef.SetValue(QtFirebaseService::fromQtVariant(value));
         qFirebaseDatabase->addFuture(DatabaseActions::Set, this, future);
     }
@@ -296,7 +313,11 @@ void QtFirebaseDatabaseRequest::updateTree(const QVariant &tree)
     QJsonDocument doc = QJsonDocument::fromJson(tree.toString().toUtf8());
     QVariant v(doc.object().toVariantMap());
     firebase::Variant vfb = QtFirebaseService::fromQtVariant(v);
-    firebase::Future<void> future = qFirebaseDatabase->m_db->GetReference().UpdateChildren(vfb);
+    if(!m_pushChildKey.isEmpty())
+    {
+        m_dbRef = m_dbRef.Child(m_pushChildKey.toUtf8().constData());
+    }
+    firebase::Future<void> future = m_dbRef.GetReference().UpdateChildren(vfb);
     qFirebaseDatabase->addFuture(DatabaseActions::Update, this, future);
 }
 
@@ -463,6 +484,11 @@ QtFirebaseDatabaseQuery *QtFirebaseDatabaseRequest::limitToLast(size_t limit)
 bool QtFirebaseDatabaseRequest::running() const
 {
     return !m_complete;
+}
+
+bool QtFirebaseDatabaseRequest::ready() const
+{
+    return qFirebase->ready() && qFirebaseDatabase->m_ready;
 }
 
 void QtFirebaseDatabaseRequest::onRun()
