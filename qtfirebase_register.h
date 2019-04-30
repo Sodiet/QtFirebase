@@ -54,6 +54,7 @@
 #include "fake/src/qtfirebaseauth.h"
 #else
 #include "src/qtfirebaseauth.h"
+#include "src/qtfirebasegooglesignin.h"
 #endif
 
 # endif // QTFIREBASE_BUILD_AUTH

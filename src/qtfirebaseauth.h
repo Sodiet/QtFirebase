@@ -13,6 +13,7 @@
 #define qFirebaseAuth (static_cast<QtFirebaseAuth *>(QtFirebaseAuth::instance()))
 
 class SmsListener;
+
 class QtFirebaseAuth : public QtFirebaseService
 {
     Q_OBJECT
@@ -71,6 +72,9 @@ public slots:
     int errorId() const;
     QString errorMsg() const;
 
+    //Google Sign-In
+    void googleSignIn();
+
     //Data
     QString email() const;
     QString displayName() const;
@@ -113,6 +117,8 @@ private:
     Q_DISABLE_COPY(QtFirebaseAuth)
 };
 
+
+
 class SmsListener : public QObject, public firebase::auth::PhoneAuthProvider::Listener
 {
     Q_OBJECT
@@ -148,6 +154,7 @@ private:
     QString m_phoneNumber;
     QMutex m_mutex;
 };
+
 
 #endif //QTFIREBASE_BUILD_AUTH
 

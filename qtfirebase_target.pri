@@ -1,7 +1,7 @@
 message("QtFirebase: configuring build for supported Firebase target platform...")
 
 isEmpty(QTFIREBASE_SDK_PATH){
-    QTFIREBASE_SDK_PATH = $$PWD/../../../firebase_cpp_sdk
+    QTFIREBASE_SDK_PATH = $$PWD/../firebase_cpp_sdk
     message("No QTFIREBASE_SDK_PATH path sat. Using default (firebase_cpp_sdk) $$QTFIREBASE_SDK_PATH")
 } else {
     message("Using QTFIREBASE_SDK_PATH ($$QTFIREBASE_SDK_PATH)")
@@ -27,6 +27,8 @@ SOURCES += \
     $$PWD/src/qtfirebase.cpp \
     $$PWD/src/qtfirebaseservice.cpp \
     \
+
+OTHER_FILES +=
 
 contains(QTPLUGIN,qtfirebase) {
     HEADERS += $$PWD/src/qtfirebase_plugin.h
@@ -215,6 +217,18 @@ contains(DEFINES,QTFIREBASE_BUILD_AUTH) {
         \
     }
 
+    android: {
+        HEADERS += $$PWD/src/qtfirebasegooglesignin.h
+        SOURCES += $$PWD/src/qtfirebasegooglesignin.cpp
+
+        DISTFILES +=
+
+        ANDROID_SOURCES.path = /
+        ANDROID_SOURCES.files = $$files($$PWD/src/android/*)
+
+        INSTALLS += ANDROID_SOURCES
+    }
+
     HEADERS += $$PWD/src/qtfirebaseauth.h
     SOURCES += $$PWD/src/qtfirebaseauth.cpp
 
@@ -244,4 +258,7 @@ contains(DEFINES,QTFIREBASE_BUILD_DATABASE) {
 }
 
 LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -l$${QTFIREBASE_SDK_LIBS_PREFIX}app
+
+DISTFILES += \
+    $$PWD/src/android/QtFirebaseAuthActivity.java
 

@@ -283,7 +283,8 @@ firebase::Variant QtFirebaseService::fromQtVariant(const QVariant &v)
     return firebase::Variant();
 }
 
-void QtFirebaseService::startInit()
+void QtFirebaseService::
+startInit()
 {
     if(qFirebase->ready())
     {

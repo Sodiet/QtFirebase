@@ -1,4 +1,5 @@
 #include "qtfirebaseauth.h"
+#include "qtfirebasegooglesignin.h"
 
 #include <QObject>
 #include <QMetaMethod>
@@ -18,9 +19,14 @@ QtFirebaseAuth::QtFirebaseAuth(QObject *parent) : QtFirebaseService(parent),
     {
         self = this;
         qDebug() << self << "::QtFirebaseAuth" << "singleton";
+        QtFirebaseGoogleSignIn::instance();
     }
+
     startInit();
 }
+
+//Google SHA1, gradle // fix,
+
 
 QtFirebaseAuth::~QtFirebaseAuth()
 {
@@ -80,7 +86,6 @@ void QtFirebaseAuth::sendPasswordResetEmail(const QString &email)
 }
 
 
-
 bool QtFirebaseAuth::signedIn() const
 {
     return m_signedIn;
@@ -128,6 +133,11 @@ int QtFirebaseAuth::errorId() const
 QString QtFirebaseAuth::errorMsg() const
 {
     return m_errMsg;
+}
+
+void QtFirebaseAuth::googleSignIn()
+{
+    QtFirebaseGoogleSignIn::instance()->login();
 }
 
 QString QtFirebaseAuth::email() const
@@ -325,6 +335,19 @@ void QtFirebaseAuth::onFutureEvent(QString eventId, firebase::FutureBase future)
                 qDebug() << "Phone provider ID: " << user->provider_id().c_str();
             }
         }
+        else if(eventId == __QTFIREBASE_ID + QStringLiteral(".auth.googlesignin"))
+        {
+            qDebug() << "onFutureEvent"  << (__QTFIREBASE_ID + QStringLiteral(".auth.googlesignin"));
+
+            firebase::auth::User* m_user = m_auth->current_user();
+            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->display_name());
+            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->email());
+            qDebug() << "firebaseSignIn" << m_user->is_email_verified();
+            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->phone_number());
+            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->photo_url());
+            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->uid());
+            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->provider_id());
+        }
     }
     else
     {
@@ -354,13 +377,14 @@ void QtFirebaseAuth::onFutureEvent(QString eventId, firebase::FutureBase future)
     setComplete(true);
 }
 
+
 void QtFirebaseAuth::smsSignIn(const QString &phone_number)
 {
     qDebug() << "smsSignIn";
 
     auth::PhoneAuthProvider& phone_provider = auth::PhoneAuthProvider::GetInstance(m_auth);
     phone_provider.VerifyPhoneNumber(phone_number.toUtf8().constData(), 120, NULL,
-                                   m_listener);
+                                      m_listener);
 }
 
 void QtFirebaseAuth::resendSms()
@@ -369,7 +393,7 @@ void QtFirebaseAuth::resendSms()
 
     auth::PhoneAuthProvider& phone_provider = auth::PhoneAuthProvider::GetInstance(m_auth);
     phone_provider.VerifyPhoneNumber(m_listener->getPhoneNumber().toUtf8().constData(), 120, m_listener->getToken(),
-                                   m_listener);
+                                      m_listener);
 }
 
 void QtFirebaseAuth::codeReceived(const QString &code)
@@ -424,7 +448,7 @@ void QtFirebaseAuth::smsVerificationError(const QString &errorMsg)
 }
 
 SmsListener::SmsListener(QObject* parent)
-: QObject(parent)
+    : QObject(parent)
 {
 }
 
@@ -441,7 +465,7 @@ void SmsListener::OnVerificationFailed(const std::string& error)
 }
 
 void SmsListener::OnCodeSent(const std::string& verification_id,
-                      const firebase::auth::PhoneAuthProvider::ForceResendingToken &force_resending_token)
+                             const firebase::auth::PhoneAuthProvider::ForceResendingToken &force_resending_token)
 {
     m_mutex.lock();
     qDebug() << "OnCodeSent";
