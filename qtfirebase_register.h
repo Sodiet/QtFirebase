@@ -54,7 +54,7 @@
 #include "fake/src/qtfirebaseauth.h"
 #else
 #include "src/qtfirebaseauth.h"
-#include "src/qtfirebasegooglesignin.h"
+#include "src/qtfirebasesocialsignin.h"
 #endif
 
 # endif // QTFIREBASE_BUILD_AUTH
@@ -86,7 +86,7 @@ static void registerQtFirebase() {
 #if defined(QTFIREBASE_BUILD_ALL) || defined(QTFIREBASE_BUILD_MESSAGING)
     qmlRegisterType<QtFirebaseMessaging>("QtFirebase", 1, 0, "Messaging");
 #endif
-    
+
 #if defined(QTFIREBASE_BUILD_ALL) || defined(QTFIREBASE_BUILD_ADMOB)
     qmlRegisterType<QtFirebaseAdMob>("QtFirebase", 1, 0, "AdMob");
     qmlRegisterType<QtFirebaseAdMobRequest>("QtFirebase", 1, 0, "AdMobRequest");

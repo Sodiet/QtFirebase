@@ -1,5 +1,5 @@
 #include "qtfirebaseauth.h"
-#include "qtfirebasegooglesignin.h"
+#include "qtfirebasesocialsignin.h"
 
 #include <QObject>
 #include <QMetaMethod>
@@ -19,14 +19,13 @@ QtFirebaseAuth::QtFirebaseAuth(QObject *parent) : QtFirebaseService(parent),
     {
         self = this;
         qDebug() << self << "::QtFirebaseAuth" << "singleton";
-        QtFirebaseGoogleSignIn::instance();
+        QtFirebaseSocialSignIn::instance()->setFirebaseID(__QTFIREBASE_ID);
     }
 
     startInit();
 }
 
-//Google SHA1, gradle // fix,
-
+//Google SHA1, gradle
 
 QtFirebaseAuth::~QtFirebaseAuth()
 {
@@ -64,7 +63,6 @@ void QtFirebaseAuth::deleteUser()
     if (!signedIn())
         return;
 
-
     m_action = ActionDeleteUser;
     clearError();
     setComplete(false);
@@ -93,17 +91,8 @@ bool QtFirebaseAuth::signedIn() const
 
 void QtFirebaseAuth::signIn(const QString &email, const QString &pass)
 {
-    if(running())
-        return;
+    preSignIn();
 
-    m_action = ActionSignIn;
-    clearError();
-    setComplete(false);
-
-    if(signedIn())
-    {
-        signOut();
-    }
     firebase::Future<auth::User*> future =
                   m_auth->SignInWithEmailAndPassword(email.toUtf8().constData(), pass.toUtf8().constData());
 
@@ -135,9 +124,33 @@ QString QtFirebaseAuth::errorMsg() const
     return m_errMsg;
 }
 
+void QtFirebaseAuth::preSignIn()
+{
+    if(running())
+        return;
+
+    m_action = ActionSignIn;
+    clearError();
+    setComplete(false);
+
+    if(signedIn())
+    {
+        signOut();
+    }
+}
+
 void QtFirebaseAuth::googleSignIn()
 {
-    QtFirebaseGoogleSignIn::instance()->login();
+    preSignIn();
+
+    QtFirebaseSocialSignIn::instance()->googleLogIn();
+}
+
+void QtFirebaseAuth::facebookSignIn()
+{
+    preSignIn();
+
+    QtFirebaseSocialSignIn::instance()->facebookLogIn();
 }
 
 QString QtFirebaseAuth::email() const
@@ -256,6 +269,7 @@ void QtFirebaseAuth::init()
 
 void QtFirebaseAuth::onFutureEvent(QString eventId, firebase::FutureBase future)
 {
+
     if(!eventId.startsWith(__QTFIREBASE_ID + QStringLiteral(".auth")))
         return;
 
@@ -335,18 +349,23 @@ void QtFirebaseAuth::onFutureEvent(QString eventId, firebase::FutureBase future)
                 qDebug() << "Phone provider ID: " << user->provider_id().c_str();
             }
         }
-        else if(eventId == __QTFIREBASE_ID + QStringLiteral(".auth.googlesignin"))
+        else if(eventId == __QTFIREBASE_ID + QStringLiteral(".auth.socialsignin"))
         {
-            qDebug() << "onFutureEvent"  << (__QTFIREBASE_ID + QStringLiteral(".auth.googlesignin"));
+            qDebug() << this << "::onFutureEvent social Sign in successful";
+            auth::User* user = result<auth::User*>(future.result_void())
+                                             ? *(result<auth::User*>(future.result_void()))
+                                             : nullptr;
+            if(user!=nullptr)
+            {
+                setSignIn(true);
 
-            firebase::auth::User* m_user = m_auth->current_user();
-            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->display_name());
-            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->email());
-            qDebug() << "firebaseSignIn" << m_user->is_email_verified();
-            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->phone_number());
-            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->photo_url());
-            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->uid());
-            qDebug() << "firebaseSignIn" << QString::fromStdString(m_user->provider_id());
+                qDebug() << "Social Name: " << QString::fromStdString(user->display_name());
+                qDebug() << "Social Email: " << QString::fromStdString(user->email());
+                qDebug() << "Social Phone Number: " << QString::fromStdString(user->phone_number());
+                qDebug() << "Social Photo Url: " << QString::fromStdString(user->photo_url());
+                qDebug() << "Social UID: " << QString::fromStdString(user->uid());
+                qDebug() << "Social provider ID: " << QString::fromStdString(user->provider_id());
+            }
         }
     }
     else
@@ -371,6 +390,10 @@ void QtFirebaseAuth::onFutureEvent(QString eventId, firebase::FutureBase future)
         else if(eventId == __QTFIREBASE_ID + QStringLiteral(".auth.deleteUser"))
         {
             qDebug() << this << "::onFutureEvent Delete user error" << future.error() << future.error_message();
+        }
+        else if(eventId == __QTFIREBASE_ID + QStringLiteral(".auth.socialsignin"))
+        {
+            qDebug() << this << "::onFutureEvent Social SignIn error" << future.error() << future.error_message();
         }
         setError(future.error(), QString::fromUtf8(future.error_message()));
     }

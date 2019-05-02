@@ -3,6 +3,7 @@
 
 #include "qtfirebaseservice.h"
 #include "firebase/auth.h"
+
 #include <QMutex>
 
 #ifdef QTFIREBASE_BUILD_AUTH
@@ -74,6 +75,7 @@ public slots:
 
     //Google Sign-In
     void googleSignIn();
+    void facebookSignIn();
 
     //Data
     QString email() const;
@@ -101,6 +103,7 @@ private:
     void setError(int errId, const QString& errMsg = QString());
     void init() override;
     void onFutureEvent(QString eventId, firebase::FutureBase future) override;
+    void preSignIn();
 
     static QtFirebaseAuth *self;
     firebase::auth::Auth* m_auth;

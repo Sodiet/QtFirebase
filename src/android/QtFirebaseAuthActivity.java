@@ -4,6 +4,18 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 
+import java.util.Arrays;
+import java.lang.Enum;
+
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginResult;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginBehavior;
+
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -11,30 +23,50 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-public class QtFirebaseAuthActivity { //AndroidNativeActivity  || Make QtFirebaseActivity, then FlipabitActivity extends QtFirebaseActivity
-
+public class QtFirebaseAuthActivity {
     //Main activity should transfer intents to googlesignin
     private static final String TAG = "QtFirebaseAuthActivity";
+    public static final int QFGoogleSignIn = 379056123;
 
-    private static final int QFGoogleSignIn = 379056123;
+    private CallbackManager m_callbackManager;
+    private Activity m_qtActivity;
+    private GoogleSignInClient m_googleSignInClient;
 
-    Activity m_qtActivity;
-    String m_clientId;
-    long m_handler;
-
-    public GoogleSignInClient m_googleSignInClient;
-
-    public QtFirebaseAuthActivity(String clientId, long handler, Activity qtActivity) //delete handler
+    public enum socialType
     {
-        m_handler = handler;
-        m_qtActivity = qtActivity;
-        m_clientId = clientId;
+        GOOGLE,
+        FACEBOOK
     }
 
-    public void login()
+    public QtFirebaseAuthActivity(Activity qtActivity)
+    {
+        m_qtActivity = qtActivity;
+
+        m_callbackManager = CallbackManager.Factory.create();
+
+        LoginManager.getInstance().registerCallback(m_callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.d(TAG, "facebook:onSuccess: " + loginResult);
+                firebaseSignIn(loginResult.getAccessToken().getToken(), socialType.FACEBOOK.ordinal());
+            }
+            @Override
+            public void onCancel() {
+                Log.d(TAG, "facebook:onCancel");
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                Log.d(TAG, "facebook:onError ", error);
+            }
+        });
+        LoginManager.getInstance().setLoginBehavior(LoginBehavior.NATIVE_WITH_FALLBACK);
+    }
+
+    public void googleSignIn()
     {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken("404440643421-lbasejr6a7qasqist87pr62vh842jlgv.apps.googleusercontent.com")
+                .requestIdToken("404440643421-lbasejr6a7qasqist87pr62vh842jlgv.apps.googleusercontent.com") //from json
                 .requestEmail()
                 .build();
 
@@ -45,17 +77,25 @@ public class QtFirebaseAuthActivity { //AndroidNativeActivity  || Make QtFirebas
 
     }
 
+    public void facebookLogIn()
+    {
+        LoginManager.getInstance().logInWithReadPermissions(m_qtActivity, Arrays.asList("public_profile", "user_friends"));
+    }
+
+    public void passToCallbackManager(int requestCode, int resultCode, Intent data)
+    {
+        m_callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
     public void activityResult(Intent data) {
         Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
         try {
-            // Google Sign In was successful, authenticate with Firebase
             GoogleSignInAccount account = task.getResult(ApiException.class);
-            firebaseSignIn(account.getIdToken());
+            firebaseSignIn(account.getIdToken(), socialType.GOOGLE.ordinal());
         } catch (ApiException e) {
-            // Google Sign In failed
-            Log.w(TAG, "Google sign in failed", e);
+            Log.w(TAG, "GoogleSignIn failed", e);
         }
     }
 
-    public static native void firebaseSignIn(String userToken);
+    public static native void firebaseSignIn(String userToken, int socialType);
 }

@@ -21,12 +21,12 @@ HEADERS += \
     $$PWD/src/platformutils.h \
     $$PWD/src/qtfirebase.h \
     $$PWD/src/qtfirebaseservice.h \
-    \
+    $$PWD/src/qtfirebasesocialsignin.h
 
 SOURCES += \
     $$PWD/src/qtfirebase.cpp \
     $$PWD/src/qtfirebaseservice.cpp \
-    \
+    $$PWD/src/qtfirebasesocialsignin.cpp
 
 OTHER_FILES +=
 
@@ -218,8 +218,8 @@ contains(DEFINES,QTFIREBASE_BUILD_AUTH) {
     }
 
     android: {
-        HEADERS += $$PWD/src/qtfirebasegooglesignin.h
-        SOURCES += $$PWD/src/qtfirebasegooglesignin.cpp
+        HEADERS +=
+        SOURCES +=
 
         DISTFILES +=
 

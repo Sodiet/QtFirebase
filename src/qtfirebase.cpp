@@ -1,6 +1,7 @@
 #include "qtfirebase.h"
 
 #include <QMutableMapIterator>
+#include <QGuiApplication>
 #include <QThread>
 
 QtFirebase *QtFirebase::self = nullptr;
@@ -95,10 +96,28 @@ void QtFirebase::addFuture(const QString &eventId, const firebase::FutureBase &f
     }
 
     _futureMap.insert(eventId,future);
-
+//check app state
     //if(!_futureWatchTimer->isActive()) {
     qDebug() << self << "::addFuture" << "starting future watch";
-    _futureWatchTimer->start(1000);
+
+    //for social signin, when app's suppresing
+    QGuiApplication *app = static_cast<QGuiApplication*>(QGuiApplication::instance());
+
+    if(app->applicationState() == Qt::ApplicationActive)
+    {
+        _futureWatchTimer->start(1000);
+    }
+    else
+    {
+        QMetaObject::Connection * const connection = new QMetaObject::Connection;
+        *connection = connect(app, &QGuiApplication::applicationStateChanged, this, [this, connection](Qt::ApplicationState state){
+            if(state == Qt::ApplicationActive){
+                _futureWatchTimer->start(1000);
+                QObject::disconnect(*connection);
+                delete connection;
+            }
+        });
+    }
     //}
 
 }
