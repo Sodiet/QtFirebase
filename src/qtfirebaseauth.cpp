@@ -25,7 +25,7 @@ QtFirebaseAuth::QtFirebaseAuth(QObject *parent) : QtFirebaseService(parent),
     startInit();
 }
 
-//Google SHA1, gradle
+
 
 QtFirebaseAuth::~QtFirebaseAuth()
 {

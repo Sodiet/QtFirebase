@@ -107,6 +107,7 @@ ios: {
 
     INCLUDEPATH += \
         $$QTFIREBASE_SDK_PATH/include \
+        $$QTFIREBASE_SDK_PATH/../ \
         $$PWD/src \
         $$PWD/src/ios \
         \
@@ -127,6 +128,7 @@ contains(DEFINES,QTFIREBASE_BUILD_ADMOB) {
             -framework GoogleMobileAds \
             -framework AdSupport \
             -framework StoreKit \
+            #-framework AppMeasurement \
             \
     }
 
@@ -183,6 +185,8 @@ contains(DEFINES,QTFIREBASE_BUILD_MESSAGING) {
 # Analytics
 contains(DEFINES,QTFIREBASE_BUILD_ANALYTICS) {
     message( "QtFirebase including Analytics" )
+    #OTHER_LDFLAGS+=-ObjC
+    #QMAKE_LFLAGS_DEBUG += -ObjC
 
     ios: {
         LIBS += \
@@ -191,8 +195,8 @@ contains(DEFINES,QTFIREBASE_BUILD_ANALYTICS) {
             -framework FirebaseCore \
             -framework FirebaseCoreDiagnostics \
             -framework FirebaseInstanceID \
-            -framework FirebaseNanoPB \
-            -framework GoogleToolboxForMac \
+            -framework GoogleAppMeasurement \
+            -framework GoogleUtilities \
             -framework nanopb \
             \
     }
@@ -209,24 +213,54 @@ contains(DEFINES,QTFIREBASE_BUILD_AUTH) {
     message( "QtFirebase including Auth" )
 
     ios: {
+
+        #INCLUDEPATH += $$QTFIREBASE_FRAMEWORKS_ROOT/Auth/Facebook/include
+        #QMAKE_RPATHDIR += -F$$QTFIREBASE_FRAMEWORKS_ROOT
+        QMAKE_LFLAGS += -F$$QTFIREBASE_FRAMEWORKS_ROOT
+
+         LIBS += \
+            -F$$QTFIREBASE_FRAMEWORKS_ROOT/Auth/Facebook \
+            -framework FBSDKCoreKit \
+            -framework FBSDKLoginKit \
+            -framework Bolts \
+        \
+
         LIBS += \
             -F$$QTFIREBASE_FRAMEWORKS_ROOT/Auth \
             -framework FirebaseAuth \
             -framework GTMSessionFetcher \
             -framework SafariServices \ # Required for Firebase iOS >= 4.4.0
         \
+
+         LIBS += \
+            -F$$QTFIREBASE_FRAMEWORKS_ROOT/Invites \
+            -framework GoogleSignIn \
+            -framework GTMOAuth2 \
+            -framework GoogleToolboxForMac \
+            -framework LocalAuthentication \
+        \
+
+        INCLUDEPATH += $$QTFIREBASE_FRAMEWORKS_ROOT/Auth/Facebook/FBSDKCoreKit.framework/Headers \
+            $$QTFIREBASE_FRAMEWORKS_ROOT/Auth/Facebook/FBSDKLoginKit.framework/Headers \
+            $$QTFIREBASE_FRAMEWORKS_ROOT/Auth/Facebook/Bolts.framework/Headers \
+            $$QTFIREBASE_FRAMEWORKS_ROOT/Invites/GoogleSignIn.framework/Headers \
+            $$QTFIREBASE_FRAMEWORKS_ROOT/Invites/GTMOAuth2.framework/Headers \
+            $$QTFIREBASE_FRAMEWORKS_ROOT/Invites/GoogleToolboxForMac.framework/Headers
+
+        GOOGLEKIT_BUNDLE.files = $$QTFIREBASE_FRAMEWORKS_ROOT/Invites/Resources/GoogleSignIn.bundle
+        QMAKE_BUNDLE_DATA += GOOGLEKIT_BUNDLE
     }
 
     android: {
-        HEADERS +=
-        SOURCES +=
+        #HEADERS +=
+        #SOURCES +=
 
-        DISTFILES +=
+        #DISTFILES +=
 
-        ANDROID_SOURCES.path = /
-        ANDROID_SOURCES.files = $$files($$PWD/src/android/*)
+        #ANDROID_SOURCES.path = /
+        #ANDROID_SOURCES.files = $$files($$PWD/src/android/*)
 
-        INSTALLS += ANDROID_SOURCES
+        #INSTALLS += ANDROID_SOURCES
     }
 
     HEADERS += $$PWD/src/qtfirebaseauth.h

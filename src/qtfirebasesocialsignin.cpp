@@ -1,10 +1,13 @@
-#include "QtFirebaseSocialSignIn.h"
+#include "qtfirebasesocialsignin.h"
 #include "qtfirebaseauth.h"
 
 #include <QDebug>
+
+#include <QThread>
+#ifdef Q_OS_ANDROID
 #include <QtAndroid>
 #include <QAndroidJniEnvironment>
-#include <QThread>
+#endif
 
 namespace auth = ::firebase::auth;
 
@@ -58,6 +61,7 @@ void QtFirebaseSocialSignIn::facebookSignIn(const QString &accessToken)
     qFirebase->addFuture(__QTFIREBASE_ID  + QStringLiteral(".auth.socialsignin"), m_auth->SignInWithCredential(credential));
 }
 
+#ifdef Q_OS_ANDROID
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -86,4 +90,5 @@ Java_com_qtfirebase_auth_QtFirebaseAuthActivity_firebaseSignIn(JNIEnv *env, jobj
 }
 #ifdef __cplusplus
 }
+#endif
 #endif

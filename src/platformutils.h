@@ -67,6 +67,8 @@ public:
     PlatformUtils();
     ~PlatformUtils();
     static void* getNativeWindow();
+    static void facebookLogin();
+
     #elif defined(Q_OS_ANDROID)
     static jobject getNativeWindow();
     #else
@@ -76,6 +78,8 @@ public:
 private:
     #if defined(Q_OS_ANDROID)
     static jobject nativeWindow;
+    #elif defined(Q_OS_IOS)
+    static void fetchUserInfo();
     #endif
 };
 

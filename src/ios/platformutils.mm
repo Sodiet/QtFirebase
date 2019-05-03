@@ -1,6 +1,12 @@
 #include "platformutils.h"
 
 #import <UIKit/UIKit.h>
+#import "../qtfirebasesocialsignin.h"
+
+#import "Firebase/Auth/Facebook/FBSDKCoreKit.framework/Headers/FBSDKAccessToken.h"
+#import "Firebase/Auth/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginManager.h"
+#import "Firebase/Auth/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginManagerLoginResult.h"
+
 
 PlatformUtils::PlatformUtils()
 {
@@ -23,4 +29,37 @@ void* PlatformUtils::getNativeWindow()
     return view;
 
     //return QGuiApplication::platformNativeInterface()->nativeResourceForWindow("uiview", QGuiApplication::focusWindow());
+}
+
+void PlatformUtils::facebookLogin()
+{
+    FBSDKLoginManager *login = [[FBSDKLoginManager alloc] init];
+    [login logInWithReadPermissions:@[@"email"] handler:^(FBSDKLoginManagerLoginResult *result, NSError *error)
+     {
+         if (error)
+         {
+             // Process error
+         }
+         else if (result.isCancelled)
+         {
+             // Handle cancellations
+         }
+         else
+         {
+             if ([result.grantedPermissions containsObject:@"email"])
+             {
+                 NSLog(@"result is:%@",result);
+                 fetchUserInfo();
+                 [login logOut];
+             }
+         }
+     }];
+}
+
+void PlatformUtils::fetchUserInfo()
+{
+    if ([FBSDKAccessToken currentAccessToken])
+    {
+        QtFirebaseSocialSignIn::instance()->facebookSignIn(QString::fromNSString([[FBSDKAccessToken currentAccessToken]tokenString]));
+    }
 }

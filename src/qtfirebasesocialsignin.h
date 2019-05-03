@@ -5,6 +5,8 @@
 #include "firebase/app.h"
 #include "firebase/auth.h"
 
+#include "platformutils.h"
+
 #ifdef QTFIREBASE_SOCIAL_SIGNIN_H
 #include "src/qtfirebase.h"
 #if defined(qFirebaseSocialSignIn)
@@ -30,8 +32,13 @@ public:
     }
 
     inline void setFirebaseID(const QString &id) { __QTFIREBASE_ID = id; }
+#ifdef Q_OS_ANDROID
     inline void googleLogIn() { QtAndroid::androidActivity().callMethod<void>("googleSignIn"); }
     inline void facebookLogIn() { QtAndroid::androidActivity().callMethod<void>("facebookLogIn"); }
+#endif
+
+    inline void googleLogIn() {  }
+    inline void facebookLogIn() { PlatformUtils::facebookLogin();}
 
     void googleSignIn(const QString &accessToken);
     void facebookSignIn(const QString &accessToken);
