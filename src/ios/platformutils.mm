@@ -7,6 +7,7 @@
 #import "Firebase/Auth/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginManager.h"
 #import "Firebase/Auth/Facebook/FBSDKLoginKit.framework/Headers/FBSDKLoginManagerLoginResult.h"
 
+#import "Firebase/Invites/GoogleSignIn.framework/Headers/GoogleSignIn.h"
 
 PlatformUtils::PlatformUtils()
 {
@@ -29,6 +30,27 @@ void* PlatformUtils::getNativeWindow()
     return view;
 
     //return QGuiApplication::platformNativeInterface()->nativeResourceForWindow("uiview", QGuiApplication::focusWindow());
+}
+
+void PlatformUtils::googleLogin()
+{
+    GIDSignIn *signin = [GIDSignIn sharedInstance];
+    
+    [signin setScopes:[NSArray arrayWithObject:@"profile"]];
+    
+    if (signin.hasAuthInKeychain) {
+        
+        NSLog(@"user signed in already, signing silently...");
+        
+        GIDGoogleUser *user = [GIDSignIn sharedInstance].currentUser;
+        if(!user) {
+            [[GIDSignIn sharedInstance] signInSilently];
+        }
+    }
+    else {
+        NSLog(@"Not signed in, start signing procedure");
+        [signin signIn];
+    }
 }
 
 void PlatformUtils::facebookLogin()

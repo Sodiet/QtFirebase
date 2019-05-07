@@ -83,11 +83,13 @@ ios: {
 
     HEADERS += \
         $$PWD/src/ios/AppDelegate.h \
+        $$PWD/src/ios/viewdelegate.h \
         \
 
     OBJECTIVE_SOURCES += \
         $$PWD/src/ios/platformutils.mm \
         $$PWD/src/ios/AppDelegate.mm \
+        $$PWD/src/ios/viewdelegate.mm \
         \
 
     LIBS += \
@@ -295,4 +297,3 @@ LIBS += -L$$QTFIREBASE_SDK_LIBS_PATH -l$${QTFIREBASE_SDK_LIBS_PREFIX}app
 
 DISTFILES += \
     $$PWD/src/android/QtFirebaseAuthActivity.java
-

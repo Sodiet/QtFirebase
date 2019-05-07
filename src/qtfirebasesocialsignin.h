@@ -37,7 +37,7 @@ public:
     inline void facebookLogIn() { QtAndroid::androidActivity().callMethod<void>("facebookLogIn"); }
 #endif
 
-    inline void googleLogIn() {  }
+    inline void googleLogIn() {  PlatformUtils::googleLogin(); }
     inline void facebookLogIn() { PlatformUtils::facebookLogin();}
 
     void googleSignIn(const QString &accessToken);

@@ -61,14 +61,16 @@ public:
  */
 class PlatformUtils
 {
+    
 public:
 
     #if defined(Q_OS_IOS)
     PlatformUtils();
     ~PlatformUtils();
     static void* getNativeWindow();
+    static void googleLogin();
     static void facebookLogin();
-
+    
     #elif defined(Q_OS_ANDROID)
     static jobject getNativeWindow();
     #else

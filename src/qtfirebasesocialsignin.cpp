@@ -60,7 +60,7 @@ void QtFirebaseSocialSignIn::facebookSignIn(const QString &accessToken)
     //socialsignin -> facebook
     qFirebase->addFuture(__QTFIREBASE_ID  + QStringLiteral(".auth.socialsignin"), m_auth->SignInWithCredential(credential));
 }
-
+//TODO set signin in auth, m_smThg delete empty comments, rename some variables, nullptr, get number and other things, const QString, check tokens. FirebaseService? oauthid to xml gradle instuctions
 #ifdef Q_OS_ANDROID
 #ifdef __cplusplus
 extern "C" {
