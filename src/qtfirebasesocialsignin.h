@@ -35,11 +35,10 @@ public:
 #ifdef Q_OS_ANDROID
     inline void googleLogIn() { QtAndroid::androidActivity().callMethod<void>("googleSignIn"); }
     inline void facebookLogIn() { QtAndroid::androidActivity().callMethod<void>("facebookLogIn"); }
-#endif
-
+#elif defined(Q_OS_IOS)
     inline void googleLogIn() {  PlatformUtils::googleLogin(); }
     inline void facebookLogIn() { PlatformUtils::facebookLogin();}
-
+#endif
     void googleSignIn(const QString &accessToken);
     void facebookSignIn(const QString &accessToken);
 
